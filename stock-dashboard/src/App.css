@@ -1,0 +1,148 @@
+:root {
+  --bg-color: #f4f7f6;
+  --card-bg: #ffffff;
+  --text-primary: #333333;
+  --gainer-color: #00b894;
+  --loser-color: #d63031;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+}
+
+.app-container {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin: 0 auto;
+  padding: 20px 40px;
+}
+
+header h1 {
+  text-align: center;
+  color: #2d3436;
+  margin-bottom: 40px;
+}
+
+.dashboard {
+  display: flex;
+  gap: 30px;
+  flex-wrap: wrap;
+}
+
+.stock-column {
+  flex: 1;
+  min-width: 300px;
+}
+
+.title {
+  padding-bottom: 10px;
+  border-bottom: 3px solid;
+}
+
+.title.gainers {
+  border-color: var(--gainer-color);
+}
+
+.title.losers {
+  border-color: var(--loser-color);
+}
+
+.stock-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.stock-card {
+  background: var(--card-bg);
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  transition: transform 0.2s ease-in-out;
+}
+
+.stock-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+}
+
+.stock-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.stock-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.badge {
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-weight: bold;
+  color: white;
+}
+
+.badge.gainers {
+  background-color: var(--gainer-color);
+}
+
+.badge.losers {
+  background-color: var(--loser-color);
+}
+
+.stock-details p {
+  margin: 5px 0;
+}
+
+.candle-info {
+  font-size: 0.85rem;
+  color: #636e72;
+}
+
+.mini-chart {
+  width: 100%;
+  height: auto;
+  max-height: 150px;
+  background-color: #fafdfc;
+  border-radius: 4px;
+}
+
+.chart-container {
+  margin-top: 15px;
+}
+
+.candle-tooltip {
+  font-size: 0.85rem;
+  min-height: 1.2rem;
+  color: var(--text-primary);
+  margin-bottom: 5px;
+}
+
+.text-muted {
+  color: #a4b0be;
+}
+
+.no-data {
+  font-size: 0.85rem;
+  color: #b2bec3;
+  margin-top: 10px;
+  font-style: italic;
+}
+
+.message {
+  text-align: center;
+  font-size: 1.5rem;
+  margin-top: 50px;
+}
+
+.error {
+  color: var(--loser-color);
+}
