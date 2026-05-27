@@ -2,3 +2,8 @@
 # Add your Python packages and versions below, for example:
 # pandas==2.1.0
 # requests>=2.31.0
+fastapi
+pandas
+requests
+tvdatafeed
+uvicorn
