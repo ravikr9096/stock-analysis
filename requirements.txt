@@ -6,4 +6,5 @@ fastapi
 pandas
 requests
 # tvdatafeed
+tradingview-datafeed
 uvicorn
