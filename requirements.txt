@@ -5,5 +5,5 @@
 fastapi
 pandas
 requests
-tvdatafeed
+# tvdatafeed
 uvicorn
