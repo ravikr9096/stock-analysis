@@ -9,7 +9,7 @@ function App() {
   useEffect(() => {
     const fetchStocks = async () => {
       try {
-        const apiUrl = import.meta.env.DEV ? 'http://localhost:8000/api/top-stocks' : '/api/top-stocks';
+        const apiUrl = '/api/top-stocks';
         const response = await fetch(apiUrl);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
