@@ -1,6 +1,5 @@
 import os
 import requests
-import concurrent.futures
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -54,37 +53,26 @@ def get_nse_data():
         print(f"Error during request: {e}")
         return None
 
-def process_single_stock(stock):
-    symbol = stock.get('symbol', 'Unknown')
-    
-    stock_info = {
-        "symbol": symbol,
-        "pChange": stock.get('pChange', 0),
-        "lastPrice": stock.get('lastPrice', 0),
-        "candles": []
-    }
-    
-    if symbol and symbol != 'Unknown':
-        df = get_5min_candle_data(symbol)
-        if not df.empty:
-            df_reset = df.reset_index()
-            if 'datetime' in df_reset.columns:
-                df_reset['datetime'] = df_reset['datetime'].astype(str)
-            stock_info['candles'] = df_reset.to_dict(orient='records')
-            
-    return stock_info
+def format_stock_data(stocks):
+    return [
+        {
+            "symbol": stock.get('symbol', 'Unknown'),
+            "pChange": stock.get('pChange', 0),
+            "lastPrice": stock.get('lastPrice', 0),
+        }
+        for stock in stocks
+    ]
 
-def process_stocks(stock_list, limit=5):
-    stocks_to_process = stock_list[:limit]
-    results = []
-    
-    # Optimize by fetching each stock's bar individually and concurrently
-    with concurrent.futures.ThreadPoolExecutor(max_workers=limit) as executor:
-        # executor.map maintains the original order of the input list
-        for stock_info in executor.map(process_single_stock, stocks_to_process):
-            results.append(stock_info)
-            
-    return results
+@app.get("/api/stock-candles/{symbol}")
+def get_stock_candles(symbol: str):
+    df = get_5min_candle_data(symbol)
+    candles = []
+    if not df.empty:
+        df_reset = df.reset_index()
+        if 'datetime' in df_reset.columns:
+            df_reset['datetime'] = df_reset['datetime'].astype(str)
+        candles = df_reset.to_dict(orient='records')
+    return {"symbol": symbol, "candles": candles}
 
 @app.get("/api/top-stocks")
 def get_top_stocks():
@@ -103,8 +91,8 @@ def get_top_stocks():
     
     return {
         "advance_info": advance_info,
-        "top_gainers": process_stocks(sorted_data_desc, 5),
-        "top_losers": process_stocks(sorted_data_asc, 5)
+        "top_gainers": format_stock_data(sorted_data_desc[:5]),
+        "top_losers": format_stock_data(sorted_data_asc[:5])
     }
 
 # Mount the React frontend build directory to serve static files

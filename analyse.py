@@ -2,9 +2,15 @@ import pandas as pd
 from tvDatafeed import TvDatafeed, Interval
 import datetime
 import time
+import threading
 
 # Initialize TvDatafeed globally to avoid reconnecting on every call
 tv = None
+
+# Add a lock and a timestamp to manage rate limiting to avoid 429 errors
+TV_DATAFEED_LOCK = threading.Lock()
+LAST_API_CALL_TIME = 0
+MIN_INTERVAL_SECONDS = 0.5  # Allow 2 requests per second to be safe
 
 def get_tv_instance():
     global tv
@@ -26,6 +32,7 @@ def get_5min_candle_data(symbol: str, exchange: str = "NSE", n_bars: int = None,
         pandas.DataFrame: A DataFrame containing Open, High, Low, Close, Volume, and Color data.
                           Returns an empty DataFrame if data fetching fails or symbol is invalid.
     """
+    global LAST_API_CALL_TIME
     try:
         filter_today = False
         ist = datetime.timezone(datetime.timedelta(hours=5, minutes=30))
@@ -51,8 +58,15 @@ def get_5min_candle_data(symbol: str, exchange: str = "NSE", n_bars: int = None,
         data = None
         attempts = 0
         while attempts < max_retries:
-            data = tv_instance.get_hist(symbol=symbol, exchange=exchange, interval=Interval.in_5_minute, n_bars=n_bars)
-            
+            with TV_DATAFEED_LOCK:
+                # Throttle requests to avoid hitting rate limits from tvdatafeed
+                elapsed = time.monotonic() - LAST_API_CALL_TIME
+                if elapsed < MIN_INTERVAL_SECONDS:
+                    time.sleep(MIN_INTERVAL_SECONDS - elapsed)
+
+                data = tv_instance.get_hist(symbol=symbol, exchange=exchange, interval=Interval.in_5_minute, n_bars=n_bars)
+                LAST_API_CALL_TIME = time.monotonic()
+
             if data is not None and not data.empty:
                 break
                 

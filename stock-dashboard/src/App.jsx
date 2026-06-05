@@ -16,6 +16,7 @@ function App() {
         }
         const data = await response.json();
         setStockData(data);
+        setError(null);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -35,10 +36,37 @@ function App() {
   if (error) return <div className="message error">Error: {error}</div>;
 
   // Component to render a mini candlestick chart (sparkline)
-  const MiniCandlestickChart = ({ candles, type }) => {
+  const MiniCandlestickChart = ({ symbol, type }) => {
+    const [candles, setCandles] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [hoveredCandle, setHoveredCandle] = useState(null);
 
-    if (!candles || candles.length === 0) return <div className="no-data">No candle data available</div>;
+    useEffect(() => {
+      const fetchCandles = async () => {
+        try {
+          const response = await fetch(`/api/stock-candles/${encodeURIComponent(symbol)}`);
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const data = await response.json();
+          setCandles(data.candles);
+          setError(null);
+        } catch (err) {
+          setError(err.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchCandles();
+      const intervalId = setInterval(fetchCandles, 60000);
+      return () => clearInterval(intervalId);
+    }, [symbol]);
+
+    if (loading) return <div className="no-data" style={{ height: '120px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading chart...</div>;
+    if (error) return <div className="no-data" style={{ height: '120px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Error: {error}</div>;
+    if (!candles || candles.length === 0) return <div className="no-data" style={{ height: '120px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>No candle data available</div>;
 
     // Calculate min and max for scaling the Y-axis
     const minLow = Math.min(...candles.map(c => c.Low));
@@ -129,7 +157,7 @@ function App() {
             </div>
             <div className="stock-details">
               <p>Last Price: <strong>₹{stock.lastPrice}</strong></p>
-              <MiniCandlestickChart candles={stock.candles} type={type} />
+              <MiniCandlestickChart symbol={stock.symbol} type={type} />
             </div>
           </div>
         ))}
